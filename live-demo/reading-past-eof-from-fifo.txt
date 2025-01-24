@@ -1,0 +1,25 @@
+
+@exCode: @file('demo-code/za-read-past-eof.c')
+  or:
+@exCode: @file('demo-code/za-loop-read.c')
+  ???
+
+
+We can use 'cat' command to feed data into the writing end of the FIFO. 
+Control-D will terminate 'cat' command's input, eventually causing 
+an EOF condition / indication at the reading end of the FIFO.
+
+This does _not_ mean that a Control-D character is passed through the pipe! 
+
+We can try other ways to terminate the 'cat' command:
+  - sending SIGTERM with the 'kill' command,
+  - Control-C (same as above actually, but the terminal takes care of signal generation)
+
+TODO: check the above, maybe something is wrong
+
+
+We can also use 'echo' to feed data into the writing end of the FIFO. 
+In this case the input is delimited / determined by the shell's parser 
+(it's not interactive), so there is no need for a convention to delimit it
+
+## EoF

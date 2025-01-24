@@ -1,0 +1,50 @@
+## live-demo/pthreads-handling-signals_sync-async.txt
+
+POSIX Threads Handling Signals, Synchronously and Asynchronously
+
+
+Depending on command line arguments, the program could have both
+  - Synchronous handling of signals, in "Waiter" thread(s)
+  and
+  - Asynchronous handling = setting up a signal handler and running 
+      "Sleeper" thread(s), one of which could be interrupted 
+      (if the signal is delivered to that thread).
+
+
+Three kinds of threads are needed:
+
+  - "Waiter" thread, doing sigtimedwait() in a loop
+      Why not sigwait()? Or sigwaitinfo() if extra signal info is needed?
+      To match the behavior of a "Sleeper" = to have similar latency and
+      number of iterations (for the threads that did _not_ receive a signal).
+
+  - "Sleeper" thread which blocks signals
+
+  - "Sleeper" thread which does not block the signal(s) --- 
+      at least the signal(s) we use for testing
+
+The program must allow starting a variable number of threads of each kind 
+(selectable at run time, with command line arguments).
+
+We need a single value (duration) for both
+  - the timeout (for "Waiters") and 
+  - the sleep duration (for "Sleepers");
+could be a compile-time selection --- 
+ability to change it at runtime is not essential for this demo. 
+Probably should be given as multiples of a second, to simplify both 
+the implementation and the discussions/explanations on 
+the program's behavior and the source code.
+
+
+Receiver:
+===
+  ./za-pthreads-sig cycle_time=.7 w1 w2 w3 w4 w5
+===
+
+Sender:
+===
+  ./za-rtsig-send 34 incr burst:17 delay:0.589 to:<Pid_of_Receiver>
+===
+
+
+## EoF

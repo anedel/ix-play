@@ -1,0 +1,3 @@
+src/demo-code/build/*
+!src/demo-code/build/Makefile
+

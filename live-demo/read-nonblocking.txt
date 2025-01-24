@@ -1,0 +1,23 @@
+
+@exCode: @file('demo-code/za-loop-read.c')
+
+See also the demo: @file('live-demo/timeout-alarm.txt'),
+        which uses same program: @file('demo-code/za-loop-read.c').
+
+
+Rationale for using read() syscall as an example:
+
+  (1) Reading/receiving is the most obviously blocking operation: 
+        you cannot receive what was not yet sent / typed in the terminal.
+
+  (2) For the demo we can easily control the timing of inputs, 
+        whether standard input is a terminal or a FIFO.
+
+  Compare to write(), which is not so obviously blocking --- 
+  we would need to explain the multiple levels of buffering; 
+  more important, it's much harder to _delay_ write() completion = 
+  _immediately_ force write() to block, from the user interface / CLI.
+
+  Indirectly causing write() to block by letting a pipe to fill 
+  seems less convincing; it's a subtler issue, definitely worth teaching, 
+  but it's not what _this_ demonstration intends to cover.
