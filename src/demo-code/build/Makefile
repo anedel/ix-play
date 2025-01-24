@@ -95,7 +95,6 @@ EXENAMES = \
   za-pthread-lifecycle \
   za-pthread-cancel \
   za-pthreads-condvar-sem \
-  za-pthreads-dup \
   za-pthreads-loop-errno-sig \
   za-pthreads-sig
 
@@ -183,9 +182,6 @@ za-pthread-cancel: $(OBJDIR)/za-pthread-cancel.o $(OBJDIR)/util-timeval.o
 	$(CC) -o $@ $^ $(CFLAGS) -lpthread -lm
 
 za-pthreads-condvar-sem: $(OBJDIR)/za-pthreads-condvar-sem.o $(OBJDIR)/util-ex-threads.o $(OBJDIR)/util-mutexattr.o
-	$(CC) -o $@ $^ $(CFLAGS) -lpthread
-
-za-pthreads-dup: $(OBJDIR)/za-pthreads-dup.o $(OBJDIR)/util-ex-threads.o
 	$(CC) -o $@ $^ $(CFLAGS) -lpthread
 
 za-pthreads-loop-errno-sig: $(OBJDIR)/za-pthreads-loop-errno-sig.o $(OBJDIR)/util-ex-threads.o $(LOOP_ERRNO_SIG_OBJS)
