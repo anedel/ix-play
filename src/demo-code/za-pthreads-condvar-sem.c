@@ -724,25 +724,25 @@ sem_wait_thread_func (void *arg)
 {
     uex_thread_info *const tinfo = arg;
 
-    unsigned long  n_locked = 0;
+    unsigned long  n_acquired = 0;
 
     int      swait_res;
     errno_t  swait_err;
 
     while (1) {
-        printf(" %s [locked %lu times] Calling sem_wait()...\n",
-               tinfo->config_str, n_locked);
+        printf(" %s [acquired %lu times] Calling sem_wait()...\n",
+               tinfo->config_str, n_acquired);
 
         swait_res = sem_wait(&sem);
         swait_err = errno;
 
         if (swait_res == 0) {
-            ++n_locked;
-            printf(" %s [locked %lu times] sem_wait(): locked OK\n",
-                   tinfo->config_str, n_locked);
+            ++n_acquired;
+            printf(" %s [acquired %lu times] sem_wait() == 0: Semaphore acquired OK\n",
+                   tinfo->config_str, n_acquired);
         } else {
-            printf(" %s [locked %lu times] sem_wait() failed with errno %d.\n",
-                   tinfo->config_str, n_locked, swait_err);
+            printf(" %s [acquired %lu times] sem_wait() failed with errno %d.\n",
+                   tinfo->config_str, n_acquired, swait_err);
         }
 
         delay_(tinfo->config_str, &delay_tval);
