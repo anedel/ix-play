@@ -2,6 +2,13 @@
  * play-utils/util-timeval.c
  *
  * Utility module for using 'struct timeval'
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * Copyright (c) 2014--2025 Alexandru Nedel
+ *
+ * (add your name here when you make significant changes to this file,
+ *  if you want to)
  */
 
 #include "util-timeval.h"

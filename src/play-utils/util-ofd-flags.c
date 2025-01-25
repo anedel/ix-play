@@ -8,6 +8,13 @@
  * It's _not_ a good example of production code!
  * Error reporting and handling are especially unsuitable for production code;
  * designed for convenience in small programs: experiments and demonstrations.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * Copyright (c) 2014--2025 Alexandru Nedel
+ *
+ * (add your name here when you make significant changes to this file,
+ *  if you want to)
  */
 
 #include "util-ofd-flags.h"
