@@ -48,12 +48,12 @@ typedef struct {
 } thread_config;
 
 
-static int  n_threads = 0;
+static int  num_threads = 0;
 
 static thread_config  thread_configs[THREADS_MAX];
 static pthread_t      thread_ids[THREADS_MAX];
 
-static unsigned long  n_started = 0;
+static unsigned long  num_started = 0;
 
 
 static int
@@ -61,10 +61,10 @@ find_thread_config (const char *config_str)
 {
     int  ix;
 
-    assert(0 <= n_threads);
-    assert(n_threads <= THREADS_MAX);
+    assert(0 <= num_threads);
+    assert(num_threads <= THREADS_MAX);
 
-    for (ix = 0; ix < n_threads; ++ix) {
+    for (ix = 0; ix < num_threads; ++ix) {
         if (0 == strcmp(config_str, thread_configs[ix].uc_config_buf)) {
             return ix;
         }
@@ -84,13 +84,13 @@ add_thread_config (const char *config_str)
         return -1;
     }
 
-    assert(0 <= n_threads);
+    assert(0 <= num_threads);
 
-    if (n_threads >= THREADS_MAX) {
+    if (num_threads >= THREADS_MAX) {
         return -2;
     }
 
-    pos = n_threads++;
+    pos = num_threads++;
 
     memcpy(thread_configs[pos].uc_config_buf, config_str, len);
     thread_configs[pos].uc_config_buf[len] = '\0';
@@ -167,10 +167,10 @@ join_one_thread (int pos)
     thread_config *curr_config;
     const char    *curr_config_str;
 
-    assert(0 < n_threads);
-    assert(n_threads <= THREADS_MAX);
+    assert(0 < num_threads);
+    assert(num_threads <= THREADS_MAX);
     assert(0 <= pos);
-    assert(pos < n_threads);
+    assert(pos < num_threads);
 
     curr_config = &thread_configs[pos];
     curr_config_str = curr_config->uc_config_buf;
@@ -265,9 +265,9 @@ sleeper_thread_func (void *arg)
     char  err_buf[128];
     int   res;
 
-    unsigned long  n_cycles = 0;
-    unsigned long  n_intr = 0;
-    unsigned long  n_fail = 0;
+    unsigned long  num_cycles = 0;
+    unsigned long  num_intr = 0;
+    unsigned long  num_fail = 0;
 
     int      sel_res;
     errno_t  sel_err;
@@ -283,12 +283,12 @@ sleeper_thread_func (void *arg)
         errno = 0;
         sel_res = select(0, NULL, NULL, NULL, &tval);  /* sleep */
         sel_err = errno;
-        ++n_cycles;
+        ++num_cycles;
 
         if (sel_res == 0) {  /* timeout */
             /* TODO: maybe print a progress message (one dot per cycle?) */
 #if 0  /* message commented out, does not seem to help */
-            printf(" %s(%lu) ", message_preamble, n_cycles);
+            printf(" %s(%lu) ", message_preamble, num_cycles);
             fflush(stdout);
 #endif
         } else {
@@ -298,7 +298,7 @@ sleeper_thread_func (void *arg)
             if (res != 0) {
                 fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                         " strerror_r(%d) failed, returning the errno value %d.\n",
-                        message_preamble, n_cycles, n_intr, n_fail, sel_err, res);
+                        message_preamble, num_cycles, num_intr, num_fail, sel_err, res);
                 exit(99);
             }
 
@@ -306,13 +306,13 @@ sleeper_thread_func (void *arg)
                 if (stop_sig != 0) {
                     fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                             " select() interrupted (probably signal %d): errno %d = %s\n",
-                            message_preamble, n_cycles, n_intr, n_fail,
+                            message_preamble, num_cycles, num_intr, num_fail,
                             stop_sig, sel_err, err_buf);
                 } else {
-                    ++n_intr;
+                    ++num_intr;
                     fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                             " select() unexpectedly interrupted: errno %d = %s\n",
-                            message_preamble, n_cycles, n_intr, n_fail,
+                            message_preamble, num_cycles, num_intr, num_fail,
                             sel_err, err_buf);
                 }
             } else if (EINVAL == sel_err) {
@@ -326,19 +326,19 @@ sleeper_thread_func (void *arg)
                  */
                 fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                         " invalid timeout interval for select(): errno %d = %s\n",
-                        message_preamble, n_cycles, n_intr, n_fail, sel_err, err_buf);
+                        message_preamble, num_cycles, num_intr, num_fail, sel_err, err_buf);
                 exit(90);
             } else {
-                ++n_fail;
+                ++num_fail;
                 fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                         " Unexpected errno %d from select(): %s\n",
-                        message_preamble, n_cycles, n_intr, n_fail, sel_err, err_buf);
+                        message_preamble, num_cycles, num_intr, num_fail, sel_err, err_buf);
             }
         }
     }
 
     printf("  %s: Sleeping loop finished after %lu cycles, %lu intr, %lu fail.\n",
-           message_preamble, n_cycles, n_intr, n_fail);
+           message_preamble, num_cycles, num_intr, num_fail);
     fflush(stdout);
 
     return tinfo;
@@ -412,7 +412,7 @@ handle_arg_start_thread_ (const char *arg)
     pthread_attr_destroy(&attr);  /* Not 'attr_p', which may be NULL */
 
     if (tcreate_res == 0) {
-        ++n_started;
+        ++num_started;
     } else {
         res = strerror_r(tcreate_res, err_buf, sizeof err_buf);
         if (res != 0) {
@@ -485,9 +485,9 @@ main (int argc, char* argv[])
 {
     struct sigaction  act;
 
-    unsigned long  n_normal_exit = 0;
-    unsigned long  n_canceled = 0;
-    unsigned long  n_join_fail = 0;
+    unsigned long  num_normal_exit = 0;
+    unsigned long  num_canceled = 0;
+    unsigned long  num_join_fail = 0;
 
     int  arg_pos = 1;
     int  res;
@@ -540,10 +540,10 @@ main (int argc, char* argv[])
     }
 
     printf("\n %lu threads started. Waiting for thread termination (join)...\n",
-           n_started);
+           num_started);
 
-    assert(0 <= n_threads);
-    assert(n_threads <= THREADS_MAX);
+    assert(0 <= num_threads);
+    assert(num_threads <= THREADS_MAX);
 
     /*
      * After this point, the program might terminate with signal 11,
@@ -558,18 +558,18 @@ main (int argc, char* argv[])
      * Undefined behavior is _not_ easily predicted:
      * a given program might not crash at same point every time.
      */
-    for (ix = 0; ix < n_threads; ++ix) {
+    for (ix = 0; ix < num_threads; ++ix) {
         join_res = join_one_thread(ix);
         switch (join_res)
         {
         case 0:
-            ++n_normal_exit;
+            ++num_normal_exit;
             break;
         case 1:
-            ++n_canceled;
+            ++num_canceled;
             break;
         case 2:
-            ++n_join_fail;
+            ++num_join_fail;
             break;
         default:
             abort();
@@ -577,7 +577,7 @@ main (int argc, char* argv[])
     }
 
     printf("Normal exit: %lu, canceled: %lu; %lu could not be joined.\n",
-           n_normal_exit, n_canceled, n_join_fail);
+           num_normal_exit, num_canceled, num_join_fail);
 
     return 0;
 }

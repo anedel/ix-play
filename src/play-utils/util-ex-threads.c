@@ -135,8 +135,8 @@ uex_start_one_thread (int pos)
 void
 uex_start_threads (void)
 {
-    unsigned long  n_success = 0;
-    unsigned long  n_start_fail = 0;
+    unsigned long  num_success = 0;
+    unsigned long  num_start_fail = 0;
 
     int  start_res;
     int  ix;
@@ -147,14 +147,14 @@ uex_start_threads (void)
     for (ix = 0; ix < uex_n_threads; ++ix) {
         start_res = uex_start_one_thread(ix);
         if (start_res != 0) {
-            ++n_start_fail;
+            ++num_start_fail;
         } else {
-            ++n_success;
+            ++num_success;
         }
     }
 
     printf("Started %lu, failed %lu\n",
-           n_success, n_start_fail);
+           num_success, num_start_fail);
 }
 
 
@@ -200,8 +200,8 @@ uex_cancel_one_thread (int pos)
 void
 uex_cancel_threads (void)
 {
-    unsigned long  n_cancel_requested = 0;
-    unsigned long  n_cancel_fail = 0;
+    unsigned long  num_cancel_requested = 0;
+    unsigned long  num_cancel_fail = 0;
 
     int  cancel_res;
     int  ix;
@@ -214,10 +214,10 @@ uex_cancel_threads (void)
         switch (cancel_res)
         {
         case 0:
-            ++n_cancel_requested;
+            ++num_cancel_requested;
             break;
         case -1:
-            ++n_cancel_fail;
+            ++num_cancel_fail;
             break;
         default:
             abort();
@@ -225,7 +225,7 @@ uex_cancel_threads (void)
     }
 
     printf("Cancellation requests sent for %lu threads; could not send for %lu.\n",
-           n_cancel_requested, n_cancel_fail);
+           num_cancel_requested, num_cancel_fail);
 }
 
 
@@ -289,9 +289,9 @@ uex_join_one_thread (int pos)
 void
 uex_join_threads (void)
 {
-    unsigned long  n_normal = 0;
-    unsigned long  n_canceled = 0;
-    unsigned long  n_join_fail = 0;
+    unsigned long  num_normal = 0;
+    unsigned long  num_canceled = 0;
+    unsigned long  num_join_fail = 0;
 
     int  join_res;
     int  ix;
@@ -304,13 +304,13 @@ uex_join_threads (void)
         switch (join_res)
         {
         case 0:
-            ++n_normal;
+            ++num_normal;
             break;
         case 1:
-            ++n_canceled;
+            ++num_canceled;
             break;
         case 2:
-            ++n_join_fail;
+            ++num_join_fail;
             break;
         default:
             abort();
@@ -318,5 +318,5 @@ uex_join_threads (void)
     }
 
     printf("Normal exit: %lu, canceled: %lu; %lu could not be joined.\n",
-           n_normal, n_canceled, n_join_fail);
+           num_normal, num_canceled, num_join_fail);
 }

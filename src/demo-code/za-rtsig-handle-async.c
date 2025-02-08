@@ -127,7 +127,7 @@ main (int argc, char* argv[])
     loop_sleeping("", cycle_time);
 
     printf("\nThe signal handler executed %lu times.\n",
-           get_n_handled_async());
+           get_num_handled_async());
 
     return 0;
 }

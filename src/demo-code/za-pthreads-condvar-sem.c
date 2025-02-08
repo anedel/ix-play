@@ -123,18 +123,18 @@ delay_ (const char *message_preamble, const volatile struct timeval *delay_tval)
 static int  mutex_lock_count = 0;
 
 /* Counting successful operations: */
-static unsigned long  n_sem_trywaits = 0;
-static unsigned long  n_sem_posts = 0;
-static unsigned long  n_cond_signals = 0;
-static unsigned long  n_cond_broadcasts = 0;
+static unsigned long  num_sem_trywaits = 0;
+static unsigned long  num_sem_posts = 0;
+static unsigned long  num_cond_signals = 0;
+static unsigned long  num_cond_broadcasts = 0;
 
 static void
 show_command_prompt_ (void)
 {
     printf("\nLock: %d; sem: %lu TryWait, %lu Post; cond: %lu Sig, %lu Bcast ops >>> ",
            mutex_lock_count,
-           n_sem_trywaits, n_sem_posts,
-           n_cond_signals, n_cond_broadcasts);
+           num_sem_trywaits, num_sem_posts,
+           num_cond_signals, num_cond_broadcasts);
     fflush(stdout);
 }
 
@@ -148,8 +148,8 @@ show_command_counters_ (void)
            "  %lu pthread_cond_signal() calls,\n"
            "  %lu pthread_cond_broadcast() calls.\n",
            mutex_lock_count,
-           n_sem_trywaits, n_sem_posts,
-           n_cond_signals, n_cond_broadcasts);
+           num_sem_trywaits, num_sem_posts,
+           num_cond_signals, num_cond_broadcasts);
 }
 
 
@@ -170,7 +170,7 @@ init_synchronization_objects_ (const pthread_mutexattr_t *mutexattr)
 }
 
 static void
-do_sem_trywaits_ (unsigned long n_calls_max)
+do_sem_trywaits_ (unsigned long num_calls_max)
 {
     char  err_buf[128];
     int   res;
@@ -180,12 +180,12 @@ do_sem_trywaits_ (unsigned long n_calls_max)
     int      sem_res;
     errno_t  sem_err;
 
-    for (ix = 0; ix < n_calls_max; ++ix) {
+    for (ix = 0; ix < num_calls_max; ++ix) {
         sem_res = sem_trywait(&sem);
         sem_err = errno;
 
         if (sem_res == 0) {
-            ++n_sem_trywaits;
+            ++num_sem_trywaits;
         } else {
             res = strerror_r(sem_err, err_buf, sizeof err_buf);
             if (res != 0) {
@@ -210,7 +210,7 @@ do_sem_trywaits_ (unsigned long n_calls_max)
 }
 
 static void
-do_sem_posts_ (unsigned long n_calls_max)
+do_sem_posts_ (unsigned long num_calls_max)
 {
     char  err_buf[128];
     int   res;
@@ -220,12 +220,12 @@ do_sem_posts_ (unsigned long n_calls_max)
     int      sem_res;
     errno_t  sem_err;
 
-    for (ix = 0; ix < n_calls_max; ++ix) {
+    for (ix = 0; ix < num_calls_max; ++ix) {
         sem_res = sem_post(&sem);
         sem_err = errno;
 
         if (sem_res == 0) {
-            ++n_sem_posts;
+            ++num_sem_posts;
         } else {
             res = strerror_r(sem_err, err_buf, sizeof err_buf);
             if (res != 0) {
@@ -250,7 +250,7 @@ do_sem_posts_ (unsigned long n_calls_max)
 }
 
 static void
-do_condvar_signals_ (unsigned long n_calls_max)
+do_condvar_signals_ (unsigned long num_calls_max)
 {
     char  err_buf[128];
     int   res;
@@ -259,11 +259,11 @@ do_condvar_signals_ (unsigned long n_calls_max)
 
     errno_t  cond_res;
 
-    for (ix = 0; ix < n_calls_max; ++ix) {
+    for (ix = 0; ix < num_calls_max; ++ix) {
         cond_res = pthread_cond_signal(&demo_condvar);
 
         if (cond_res == 0) {
-            ++n_cond_signals;
+            ++num_cond_signals;
         } else {
             res = strerror_r(cond_res, err_buf, sizeof err_buf);
             if (res != 0) {
@@ -288,7 +288,7 @@ do_condvar_signals_ (unsigned long n_calls_max)
 }
 
 static void
-do_condvar_broadcasts_ (unsigned long n_calls_max)
+do_condvar_broadcasts_ (unsigned long num_calls_max)
 {
     char  err_buf[128];
     int   res;
@@ -297,11 +297,11 @@ do_condvar_broadcasts_ (unsigned long n_calls_max)
 
     errno_t  cond_res;
 
-    for (ix = 0; ix < n_calls_max; ++ix) {
+    for (ix = 0; ix < num_calls_max; ++ix) {
         cond_res = pthread_cond_broadcast(&demo_condvar);
 
         if (cond_res == 0) {
-            ++n_cond_broadcasts;
+            ++num_cond_broadcasts;
         } else {
             res = strerror_r(cond_res, err_buf, sizeof err_buf);
             if (res != 0) {
@@ -679,7 +679,7 @@ condvar_wait_thread_func (void *arg)
 {
     uex_thread_info *const tinfo = arg;
 
-    unsigned long  n_wakeups = 0;
+    unsigned long  num_wakeups = 0;
 
     errno_t  mutex_res;
     errno_t  cond_res;
@@ -688,29 +688,29 @@ condvar_wait_thread_func (void *arg)
         mutex_res = pthread_mutex_lock(&demo_mutex);
         if (mutex_res == 0) {
             printf(" %s [%lu wakeups] pthread_mutex_lock() OK\n",
-                   tinfo->config_str, n_wakeups);
+                   tinfo->config_str, num_wakeups);
         } else {
             printf(" %s [%lu wakeups] pthread_mutex_lock() failed, returning the errno value %d.\n",
-                   tinfo->config_str, n_wakeups, mutex_res);
+                   tinfo->config_str, num_wakeups, mutex_res);
         }
 
         cond_res = pthread_cond_wait(&demo_condvar, &demo_mutex);
         if (cond_res == 0) {
-            ++n_wakeups;
+            ++num_wakeups;
             printf(" %s [%lu wakeups] pthread_cond_wait() OK\n",
-                   tinfo->config_str, n_wakeups);
+                   tinfo->config_str, num_wakeups);
         } else {
             printf(" %s [%lu wakeups] pthread_cond_wait() failed, returning the errno value %d.\n",
-                   tinfo->config_str, n_wakeups, cond_res);
+                   tinfo->config_str, num_wakeups, cond_res);
         }
 
         mutex_res = pthread_mutex_unlock(&demo_mutex);
         if (mutex_res == 0) {
             printf(" %s [%lu wakeups] pthread_mutex_unlock() OK\n",
-                   tinfo->config_str, n_wakeups);
+                   tinfo->config_str, num_wakeups);
         } else {
             printf(" %s [%lu wakeups] pthread_mutex_unlock() failed, returning the errno value %d.\n",
-                   tinfo->config_str, n_wakeups, mutex_res);
+                   tinfo->config_str, num_wakeups, mutex_res);
         }
 
         delay_(tinfo->config_str, &delay_tval);
@@ -724,25 +724,25 @@ sem_wait_thread_func (void *arg)
 {
     uex_thread_info *const tinfo = arg;
 
-    unsigned long  n_acquired = 0;
+    unsigned long  num_acquired = 0;
 
     int      swait_res;
     errno_t  swait_err;
 
     while (1) {
         printf(" %s [acquired %lu times] Calling sem_wait()...\n",
-               tinfo->config_str, n_acquired);
+               tinfo->config_str, num_acquired);
 
         swait_res = sem_wait(&sem);
         swait_err = errno;
 
         if (swait_res == 0) {
-            ++n_acquired;
+            ++num_acquired;
             printf(" %s [acquired %lu times] sem_wait() == 0: Semaphore acquired OK\n",
-                   tinfo->config_str, n_acquired);
+                   tinfo->config_str, num_acquired);
         } else {
             printf(" %s [acquired %lu times] sem_wait() failed with errno %d.\n",
-                   tinfo->config_str, n_acquired, swait_err);
+                   tinfo->config_str, num_acquired, swait_err);
         }
 
         delay_(tinfo->config_str, &delay_tval);
@@ -866,7 +866,7 @@ main (int argc, char* argv[])
     if (req_mutexattr_p) {
         printf("Created the demo mutex with the following attributes\n"
                "(actually changed %u values out of %u found in the CLI argument):\n",
-               mstatus.ms_n_changed, mpinfo.mp_n_parsed);
+               mstatus.ms_num_changed, mpinfo.mp_num_parsed);
         show_mutexattr_settings(req_mutexattr_p, stdout);
 
         pthread_mutexattr_destroy(req_mutexattr_p);

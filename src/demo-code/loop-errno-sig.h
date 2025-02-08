@@ -12,7 +12,7 @@
 
 #include <signal.h>
 
-unsigned long  get_n_acts(void);
+unsigned long  get_num_acts(void);
 
 void  test_close_ebadf(void);
 void  loop_expecting_eacces(const char *message_preamble);

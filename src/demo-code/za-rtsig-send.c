@@ -29,8 +29,8 @@
 #endif
 
 
-static unsigned long  n_select_intr = 0;
-static unsigned long  n_select_fail = 0;
+static unsigned long  num_select_intr = 0;
+static unsigned long  num_select_fail = 0;
 
 static void
 delay_ (const struct timeval *delay_tval)
@@ -65,15 +65,15 @@ delay_ (const struct timeval *delay_tval)
         if (res != 0) {
             fprintf(stderr, "[%lu intr, %lu fail]"
                     " strerror_r(%d) failed, returning the errno value %d.\n",
-                    n_select_intr, n_select_fail, sel_err, res);
+                    num_select_intr, num_select_fail, sel_err, res);
             exit(99);
         }
 
         if (EINTR == sel_err) {
-            ++n_select_intr;
+            ++num_select_intr;
             fprintf(stderr, "[%lu intr, %lu fail]"
                     " select() interrupted: errno %d = %s\n",
-                    n_select_intr, n_select_fail, sel_err, err_buf);
+                    num_select_intr, num_select_fail, sel_err, err_buf);
         } else if (EINVAL == sel_err) {
             /*
              * Given the way we call select() here (no file descriptors),
@@ -85,13 +85,13 @@ delay_ (const struct timeval *delay_tval)
              */
             fprintf(stderr, "[%lu intr, %lu fail]"
                     " invalid timeout interval for select(): errno %d = %s\n",
-                    n_select_intr, n_select_fail, sel_err, err_buf);
+                    num_select_intr, num_select_fail, sel_err, err_buf);
             exit(90);
         } else {
-            ++n_select_fail;
+            ++num_select_fail;
             fprintf(stderr, "[%lu intr, %lu fail]"
                     " Unexpected errno %d from select(): %s\n",
-                    n_select_intr, n_select_fail, sel_err, err_buf);
+                    num_select_intr, num_select_fail, sel_err, err_buf);
         }
     }
 }
@@ -107,8 +107,8 @@ static int  the_signo = 0;
 static int  incr_signal_value = 0;
 static int  curr_signal_value = 0;  /* May be changed after each signal sent */
 
-static unsigned long long  n_calls = 0;
-static unsigned long long  n_sent = 0;
+static unsigned long long  num_calls = 0;
+static unsigned long long  num_sent = 0;
 
 
 static volatile sig_atomic_t  stop_sig = 0;
@@ -136,7 +136,7 @@ send_burst (void)
     for (ix = 0; ix < burst_size; ++ix) {
         if (stop_sig != 0) {
             printf("Burst stopped by signal %d after %lu iterations; total %llu calls, %llu signals queued.\n",
-                   stop_sig, ix, n_calls, n_sent);
+                   stop_sig, ix, num_calls, num_sent);
             break;
         }
 
@@ -147,17 +147,17 @@ send_burst (void)
         errno = 0;
         my_res = sigqueue(target_pid, the_signo, val);
         my_err = errno;
-        ++n_calls;
+        ++num_calls;
 
         if (my_res == 0) {
-            ++n_sent;
+            ++num_sent;
         } else {
             switch (my_err)
             {
             case EAGAIN:
                 /* 'stdout', not 'stderr', because we expect this to happen occasionally */
                 fprintf(stdout, "[%lu out of %lu; total %llu calls, %llu sent] sigqueue(sival_int=%d) failed, can retry: result %d, errno %d = %s\n",
-                        ix, burst_size, n_calls, n_sent, val.sival_int,
+                        ix, burst_size, num_calls, num_sent, val.sival_int,
                         my_res, my_err, strerror(my_err));
                 return 1;
 
@@ -165,13 +165,13 @@ send_burst (void)
             case EPERM:
             case ESRCH:
                 fprintf(stderr, "[%lu out of %lu; total %llu calls, %llu sent] sigqueue(sival_int=%d) failed: result %d, errno %d = %s\n",
-                        ix, burst_size, n_calls, n_sent, val.sival_int,
+                        ix, burst_size, num_calls, num_sent, val.sival_int,
                         my_res, my_err, strerror(my_err));
                 return -1000;
 
             default:
                 fprintf(stderr, "[%lu out of %lu; total %llu calls, %llu sent] sigqueue(sival_int=%d) failed: result %d, unexpected errno %d = %s\n",
-                        ix, burst_size, n_calls, n_sent, val.sival_int,
+                        ix, burst_size, num_calls, num_sent, val.sival_int,
                         my_res, my_err, strerror(my_err));
                 return -2345;
             }
@@ -185,19 +185,19 @@ send_burst (void)
 static void
 loop_sending (void)
 {
-    unsigned long  n_bursts = 0;
+    unsigned long  num_bursts = 0;
 
     int  res;
 
     while (stop_sig == 0) {
         res = send_burst();
-        ++n_bursts;
+        ++num_bursts;
 
         if (res < 0) {
             printf("\nUnlikely to work if we try again, send_burst() returned %d.\n",
                    res);
             printf("\nStopped after %lu bursts; total %llu calls, %llu signals queued.\n",
-                   n_bursts, n_calls, n_sent);
+                   num_bursts, num_calls, num_sent);
             return;
         }
 
@@ -207,7 +207,7 @@ loop_sending (void)
     }
 
     printf("Stopped by signal %d after %lu bursts; total %llu calls, %llu signals queued.\n",
-           stop_sig, n_bursts, n_calls, n_sent);
+           stop_sig, num_bursts, num_calls, num_sent);
 }
 
 

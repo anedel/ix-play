@@ -12,7 +12,7 @@
 
 #include <signal.h>
 
-unsigned long  get_n_handled_async(void);
+unsigned long  get_num_handled_async(void);
 
 /*
  * Second arg ('cycle_time_s') is the Cycle Time in Seconds; decimals allowed.

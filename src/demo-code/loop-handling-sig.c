@@ -43,12 +43,12 @@ static int  want_compact_info = 0;
 
 static volatile sig_atomic_t  stop_sig = 0;
 static volatile sig_atomic_t  act_sig = 0;
-static volatile unsigned long  n_handled_async = 0;
+static volatile unsigned long  num_handled_async = 0;
 
 unsigned long
-get_n_handled_async (void)
+get_num_handled_async (void)
 {
-    return n_handled_async;
+    return num_handled_async;
 }
 
 static void
@@ -61,14 +61,14 @@ static void
 act_handler_1arg (int signo)
 {
     act_sig = signo;
-    ++n_handled_async;
+    ++num_handled_async;
 }
 
 static void
 act_handler_3args (int signo, siginfo_t *info, void *other)
 {
     act_sig = signo;
-    ++n_handled_async;
+    ++num_handled_async;
 }
 
 
@@ -95,10 +95,10 @@ loop_waiting_signal (const char *message_preamble, double cycle_time_s)
     char  err_buf[128];
     int   res;
 
-    unsigned long  n_cycles = 0;
-    unsigned long  n_sync = 0;  /* Number of signals handled Synchronously */
-    unsigned long  n_intr = 0;
-    unsigned long  n_fail = 0;
+    unsigned long  num_cycles = 0;
+    unsigned long  num_sync = 0;  /* Number of signals handled Synchronously */
+    unsigned long  num_intr = 0;
+    unsigned long  num_fail = 0;
 
     int      swait_res;
     errno_t  swait_err;
@@ -115,14 +115,14 @@ loop_waiting_signal (const char *message_preamble, double cycle_time_s)
         errno = 0;
         swait_res = sigtimedwait(&sigset, &siginfo, &cycle_tspec);
         swait_err = errno;
-        ++n_cycles;
+        ++num_cycles;
 
         if (swait_res > 0) {
-            ++n_sync;
+            ++num_sync;
 
             printf("%s [%lu cycles: %lu sync, %lu intr, %lu fail]"
                    " Synchronously handling signal %d:",
-                   message_preamble, n_cycles, n_sync, n_intr, n_fail,
+                   message_preamble, num_cycles, num_sync, num_intr, num_fail,
                    swait_res);
 
             if (want_compact_info) {
@@ -142,13 +142,13 @@ loop_waiting_signal (const char *message_preamble, double cycle_time_s)
                 if (stop_sig != 0) {
                     fprintf(stderr, "%s [%lu cycles: %lu sync, %lu intr, %lu fail]"
                             " sigtimedwait() interrupted (probably signal %d): errno %d.\n",
-                            message_preamble, n_cycles, n_sync, n_intr, n_fail,
+                            message_preamble, num_cycles, num_sync, num_intr, num_fail,
                             stop_sig, swait_err);
                 } else {
-                    ++n_intr;
+                    ++num_intr;
                     fprintf(stderr, "%s [%lu cycles: %lu sync, %lu intr, %lu fail]"
                             " sigtimedwait() unexpectedly interrupted: errno %d.\n",
-                            message_preamble, n_cycles, n_sync, n_intr, n_fail,
+                            message_preamble, num_cycles, num_sync, num_intr, num_fail,
                             swait_err);
                 }
             } else if (EINVAL == swait_err) {
@@ -164,24 +164,24 @@ loop_waiting_signal (const char *message_preamble, double cycle_time_s)
                  */
                 fprintf(stderr, "%s [%lu cycles: %lu sync, %lu intr, %lu fail]"
                         " invalid timeout interval for sigtimedwait(): errno %d.\n",
-                        message_preamble, n_cycles, n_sync, n_intr, n_fail,
+                        message_preamble, num_cycles, num_sync, num_intr, num_fail,
                         swait_err);
                 exit(91);
             } else {
-                ++n_fail;
+                ++num_fail;
 
                 res = strerror_r(swait_err, err_buf, sizeof err_buf);
                 if (res != 0) {
                     fprintf(stderr, "%s [%lu cycles: %lu sync, %lu intr, %lu fail]"
                             " strerror_r(%d) failed, returning the errno value %d.\n",
-                            message_preamble, n_cycles, n_sync, n_intr, n_fail,
+                            message_preamble, num_cycles, num_sync, num_intr, num_fail,
                             swait_err, res);
                     exit(98);
                 }
 
                 fprintf(stderr, "%s [%lu cycles: %lu sync, %lu intr, %lu fail]"
                         " Unexpected errno %d from sigtimedwait(): %s\n",
-                        message_preamble, n_cycles, n_sync, n_intr, n_fail,
+                        message_preamble, num_cycles, num_sync, num_intr, num_fail,
                         swait_err, err_buf);
             }
         }
@@ -193,10 +193,10 @@ loop_waiting_signal (const char *message_preamble, double cycle_time_s)
            "\n%s  %lu times sigtimedwait() was unexpectedly interrupted,"
            "\n%s  %lu failures.\n",
            message_preamble, (int) stop_sig,
-           message_preamble, n_cycles,
-           message_preamble, n_sync,
-           message_preamble, n_intr,
-           message_preamble, n_fail);
+           message_preamble, num_cycles,
+           message_preamble, num_sync,
+           message_preamble, num_intr,
+           message_preamble, num_fail);
 }
 
 
@@ -218,9 +218,9 @@ loop_sleeping (const char *message_preamble, double cycle_time_s)
     char  err_buf[128];
     int   res;
 
-    unsigned long  n_cycles = 0;
-    unsigned long  n_intr = 0;
-    unsigned long  n_fail = 0;
+    unsigned long  num_cycles = 0;
+    unsigned long  num_intr = 0;
+    unsigned long  num_fail = 0;
 
     int      sel_res;
     errno_t  sel_err;
@@ -236,7 +236,7 @@ loop_sleeping (const char *message_preamble, double cycle_time_s)
         errno = 0;
         sel_res = select(0, NULL, NULL, NULL, &tval);  /* sleep */
         sel_err = errno;
-        ++n_cycles;
+        ++num_cycles;
 
         if (sel_res == 0) {  /* timeout */
             /* TODO: maybe print a progress message (one dot per cycle?) */
@@ -247,7 +247,7 @@ loop_sleeping (const char *message_preamble, double cycle_time_s)
             if (res != 0) {
                 fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                         " strerror_r(%d) failed, returning the errno value %d.\n",
-                        message_preamble, n_cycles, n_intr, n_fail, sel_err, res);
+                        message_preamble, num_cycles, num_intr, num_fail, sel_err, res);
                 exit(99);
             }
 
@@ -255,13 +255,13 @@ loop_sleeping (const char *message_preamble, double cycle_time_s)
                 if (stop_sig != 0) {
                     fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                             " select() interrupted (probably signal %d): errno %d = %s\n",
-                            message_preamble, n_cycles, n_intr, n_fail,
+                            message_preamble, num_cycles, num_intr, num_fail,
                             stop_sig, sel_err, err_buf);
                 } else {
-                    ++n_intr;
+                    ++num_intr;
                     fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                             " select() unexpectedly interrupted: errno %d = %s\n",
-                            message_preamble, n_cycles, n_intr, n_fail,
+                            message_preamble, num_cycles, num_intr, num_fail,
                             sel_err, err_buf);
                 }
             } else if (EINVAL == sel_err) {
@@ -275,13 +275,13 @@ loop_sleeping (const char *message_preamble, double cycle_time_s)
                  */
                 fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                         " invalid timeout interval for select(): errno %d = %s\n",
-                        message_preamble, n_cycles, n_intr, n_fail, sel_err, err_buf);
+                        message_preamble, num_cycles, num_intr, num_fail, sel_err, err_buf);
                 exit(90);
             } else {
-                ++n_fail;
+                ++num_fail;
                 fprintf(stderr, "%s [%lu cycles: %lu intr, %lu fail]"
                         " Unexpected errno %d from select(): %s\n",
-                        message_preamble, n_cycles, n_intr, n_fail, sel_err, err_buf);
+                        message_preamble, num_cycles, num_intr, num_fail, sel_err, err_buf);
             }
         }
     }
@@ -291,9 +291,9 @@ loop_sleeping (const char *message_preamble, double cycle_time_s)
            "\n%s  %lu times select() was unexpectedly interrupted,"
            "\n%s  %lu failures.\n",
            message_preamble, (int) stop_sig,
-           message_preamble, n_cycles,
-           message_preamble, n_intr,
-           message_preamble, n_fail);
+           message_preamble, num_cycles,
+           message_preamble, num_intr,
+           message_preamble, num_fail);
 }
 
 

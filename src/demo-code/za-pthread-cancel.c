@@ -102,7 +102,7 @@ static double  cycle_time_s = 2.9999999999;
      * if converting to 'struct timespec' at least nine nines are needed.
      */
 
-static unsigned long  n_max_cycles = 5;
+static unsigned long  num_max_cycles = 5;
 
 
 static void *
@@ -123,9 +123,9 @@ sleeper_thread_func (void *arg)
     char  err_buf[128];
     int   res;
 
-    unsigned long  n_cycles = 0;
-    unsigned long  n_intr = 0;
-    unsigned long  n_fail = 0;
+    unsigned long  num_cycles = 0;
+    unsigned long  num_intr = 0;
+    unsigned long  num_fail = 0;
 
     int      sel_res;
     errno_t  sel_err;
@@ -138,15 +138,15 @@ sleeper_thread_func (void *arg)
     show_timeval(&cycle_tval, stdout);
     fprintf(stdout, ".\n");
 
-    while (n_cycles < n_max_cycles) {
+    while (num_cycles < num_max_cycles) {
         tval = cycle_tval;
         errno = 0;
         sel_res = select(0, NULL, NULL, NULL, &tval);  /* sleep */
         sel_err = errno;
-        ++n_cycles;
+        ++num_cycles;
 
         if (sel_res == 0) {  /* timeout */
-            printf("    [cycle %lu / %lu: OK]\n", n_cycles, n_max_cycles);
+            printf("    [cycle %lu / %lu: OK]\n", num_cycles, num_max_cycles);
         } else {
             assert(sel_res == -1);
 
@@ -154,15 +154,15 @@ sleeper_thread_func (void *arg)
             if (res != 0) {
                 fprintf(stderr, "[%lu cycles: %lu intr, %lu fail]"
                         " strerror_r(%d) failed, returning the errno value %d.\n",
-                        n_cycles, n_intr, n_fail, sel_err, res);
+                        num_cycles, num_intr, num_fail, sel_err, res);
                 exit(99);
             }
 
             if (EINTR == sel_err) {
-                ++n_intr;
+                ++num_intr;
                 fprintf(stderr, "[%lu cycles: %lu intr, %lu fail]"
                         " select() interrupted: errno %d = %s\n",
-                        n_cycles, n_intr, n_fail, sel_err, err_buf);
+                        num_cycles, num_intr, num_fail, sel_err, err_buf);
             } else if (EINVAL == sel_err) {
                 /*
                  * Given the way we call select() here (no file descriptors),
@@ -174,13 +174,13 @@ sleeper_thread_func (void *arg)
                  */
                 fprintf(stderr, "[%lu cycles: %lu intr, %lu fail]"
                         " invalid timeout interval for select(): errno %d = %s\n",
-                        n_cycles, n_intr, n_fail, sel_err, err_buf);
+                        num_cycles, num_intr, num_fail, sel_err, err_buf);
                 exit(90);
             } else {
-                ++n_fail;
+                ++num_fail;
                 fprintf(stderr, "[%lu cycles: %lu intr, %lu fail]"
                         " Unexpected errno %d from select(): %s\n",
-                        n_cycles, n_intr, n_fail, sel_err, err_buf);
+                        num_cycles, num_intr, num_fail, sel_err, err_buf);
             }
         }
     }
@@ -189,7 +189,7 @@ sleeper_thread_func (void *arg)
            "\n  %lu cycles,"
            "\n  %lu times select() was unexpectedly interrupted,"
            "\n  %lu failures.\n",
-           n_cycles, n_intr, n_fail);
+           num_cycles, num_intr, num_fail);
     fflush(stdout);
 
     return NULL;

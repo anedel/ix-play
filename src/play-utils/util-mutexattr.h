@@ -41,13 +41,13 @@ typedef struct {
      * given by the first argument (pthread_mutexattr_t *dest_attr)
      * of apply_mutexattr_settings().
      */
-    unsigned  mp_n_parsed;   /* (1) Parsed successfully */
+    unsigned  mp_num_parsed;   /* (1) Parsed successfully */
 } mutexattr_parsing_info;
 
 typedef struct {
-    unsigned  ms_n_unchanged;
-    unsigned  ms_n_changed;  /* (2) actually Changed, see above comment */
-    unsigned  ms_n_failed;
+    unsigned  ms_num_unchanged;
+    unsigned  ms_num_changed;  /* (2) actually Changed, see above comment */
+    unsigned  ms_num_failed;
 } mutexattr_setting_status;
 
 

@@ -43,8 +43,8 @@ alarm_sig_handler (int signo)
 }
 
 
-static unsigned long  n_select_intr = 0;
-static unsigned long  n_select_fail = 0;
+static unsigned long  num_select_intr = 0;
+static unsigned long  num_select_fail = 0;
 
 static void
 delay_ (const struct timeval *delay_tval)
@@ -79,15 +79,15 @@ delay_ (const struct timeval *delay_tval)
         if (res != 0) {
             fprintf(stderr, "[%lu intr, %lu fail]"
                     " strerror_r(%d) failed, returning the errno value %d.\n",
-                    n_select_intr, n_select_fail, sel_err, res);
+                    num_select_intr, num_select_fail, sel_err, res);
             exit(99);
         }
 
         if (EINTR == sel_err) {
-            ++n_select_intr;
+            ++num_select_intr;
             fprintf(stderr, "[%lu intr, %lu fail]"
                     " select() interrupted: errno %d = %s\n",
-                    n_select_intr, n_select_fail, sel_err, err_buf);
+                    num_select_intr, num_select_fail, sel_err, err_buf);
         } else if (EINVAL == sel_err) {
             /*
              * Given the way we call select() here (no file descriptors),
@@ -99,13 +99,13 @@ delay_ (const struct timeval *delay_tval)
              */
             fprintf(stderr, "[%lu intr, %lu fail]"
                     " invalid timeout interval for select(): errno %d = %s\n",
-                    n_select_intr, n_select_fail, sel_err, err_buf);
+                    num_select_intr, num_select_fail, sel_err, err_buf);
             exit(90);
         } else {
-            ++n_select_fail;
+            ++num_select_fail;
             fprintf(stderr, "[%lu intr, %lu fail]"
                     " Unexpected errno %d from select(): %s\n",
-                    n_select_intr, n_select_fail, sel_err, err_buf);
+                    num_select_intr, num_select_fail, sel_err, err_buf);
         }
     }
 }
@@ -243,7 +243,7 @@ main (int argc, char* argv[])
 
     char  buf[1024];
 
-    int      n_read;
+    int      num_read;
     errno_t  read_err;
 
     unsigned  alarm_rem;  /* time Remaining */
@@ -300,13 +300,13 @@ main (int argc, char* argv[])
                    STDIN_FILENO);
         }
 
-        n_read = read(STDIN_FILENO, buf, sizeof buf);
+        num_read = read(STDIN_FILENO, buf, sizeof buf);
         read_err = errno;
 
         alarm_rem = alarm(0);  /* Cancel the pending alarm request, if any. */
 
         printf("read(STDIN_FILENO, buf, %zu) returned %d, errno %d = %s\n",
-               sizeof buf, n_read, read_err, strerror(read_err));
+               sizeof buf, num_read, read_err, strerror(read_err));
 
         if (alarm_s > 0) {
             printf("Canceled alarm: %u seconds remaining out of %u requested.\n",

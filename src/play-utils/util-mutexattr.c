@@ -43,12 +43,12 @@ struct mp_attr_value {
 
 static const struct mp_attr_value *
 find_av_by_value_ (
-        const struct mp_attr_value entries[], size_t n_entries,
+        const struct mp_attr_value entries[], size_t num_entries,
         int value)
 {
     size_t  ix;
 
-    for (ix = 0; ix < n_entries; ++ix) {
+    for (ix = 0; ix < num_entries; ++ix) {
         if (entries[ix].av_value == value) {
             return &entries[ix];
         }
@@ -525,7 +525,7 @@ parse_mutexattr_str (mutexattr_parsing_info *mpinfo, const char *input)
             return res;
         }
 
-        ++mpinfo->mp_n_parsed;
+        ++mpinfo->mp_num_parsed;
 
         curr = mpinfo->mp_rem;
 
@@ -552,13 +552,13 @@ update_mstatus_ (mutexattr_setting_status *mstatus, int res)
     switch (res)
     {
     case Attr_Unchanged:
-        ++mstatus->ms_n_unchanged;
+        ++mstatus->ms_num_unchanged;
         break;
     case Attr_Set_OK:
-        ++mstatus->ms_n_changed;
+        ++mstatus->ms_num_changed;
         break;
     case Attr_Set_Failed:
-        ++mstatus->ms_n_failed;
+        ++mstatus->ms_num_failed;
         break;
     default:
         abort();
@@ -692,7 +692,7 @@ show_mutexattr_settings (const pthread_mutexattr_t *attr, FILE *out_stream)
 
 static void
 show_av_entries_ (
-        const struct mp_attr_value entries[], size_t n_entries,
+        const struct mp_attr_value entries[], size_t num_entries,
         FILE *out_stream)
 {
     static const char *const Val_Preamble = " ";
@@ -700,7 +700,7 @@ show_av_entries_ (
 
     size_t  ix;
 
-    for (ix = 0; ix < n_entries; ++ix) {
+    for (ix = 0; ix < num_entries; ++ix) {
         show_av_entry_(&entries[ix], Val_Preamble, out_stream);
     }
 }

@@ -40,13 +40,13 @@ get_first_input_char_ (int in_fd, FILE *report_stream)
 {
     char  buf[8];
 
-    const ssize_t  n_read = read(in_fd, buf, sizeof buf);
+    const ssize_t  num_read = read(in_fd, buf, sizeof buf);
 
-    if (n_read < 0) {
+    if (num_read < 0) {
         perror("get_first_input_char_: read");
         return -11;
     }
-    if (n_read == 0) {
+    if (num_read == 0) {
         return -12;
     }
 
@@ -56,10 +56,10 @@ get_first_input_char_ (int in_fd, FILE *report_stream)
 void
 discard_input (int in_fd, FILE *report_stream, size_t bufsize)
 {
-    unsigned long long  n_discarded = 0;
+    unsigned long long  num_discarded = 0;
     char  buf[DISCARD_BUF_MAX];
 
-    ssize_t  n_read;
+    ssize_t  num_read;
     errno_t  read_err;
 
     assert(bufsize <= DISCARD_BUF_MAX);
@@ -69,13 +69,13 @@ discard_input (int in_fd, FILE *report_stream, size_t bufsize)
     fflush(report_stream);
 
     do {
-        n_read = read(in_fd, buf, bufsize);
+        num_read = read(in_fd, buf, bufsize);
         read_err = errno;
 
-        fprintf(report_stream, "%zd, ", n_read);
+        fprintf(report_stream, "%zd, ", num_read);
         fflush(report_stream);
 
-        if (n_read < 0) {
+        if (num_read < 0) {
             if (EAGAIN != read_err) {
                 fprintf(stderr, "discard_input: read(%d) error %d = %s\n",
                         in_fd, read_err, strerror(read_err));
@@ -84,10 +84,10 @@ discard_input (int in_fd, FILE *report_stream, size_t bufsize)
             return;
         }
 
-        n_discarded += n_read;
-    } while (n_read > 0);
+        num_discarded += num_read;
+    } while (num_read > 0);
 
-    fprintf(report_stream, "Discarded %llu bytes.\n", n_discarded);
+    fprintf(report_stream, "Discarded %llu bytes.\n", num_discarded);
     fflush(report_stream);
 }
 

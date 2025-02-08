@@ -36,12 +36,12 @@
 
 static volatile sig_atomic_t  stop_sig = 0;
 static volatile sig_atomic_t  act_sig = 0;
-static volatile unsigned long  n_acts = 0;
+static volatile unsigned long  num_acts = 0;
 
 unsigned long
-get_n_acts (void)
+get_num_acts (void)
 {
-    return n_acts;
+    return num_acts;
 }
 
 static void
@@ -55,7 +55,7 @@ act_fail_handler_1arg (int signo)
 {
     act_sig = signo;
     close(-1);  /* should set errno to EBADF */
-    ++n_acts;
+    ++num_acts;
 }
 
 static void
@@ -63,7 +63,7 @@ act_fail_handler_3args (int signo, siginfo_t *info, void *other)
 {
     act_sig = signo;
     close(-1);  /* should set errno to EBADF */
-    ++n_acts;
+    ++num_acts;
 }
 
 void
@@ -103,9 +103,9 @@ loop_expecting_eacces (const char *message_preamble)
     char  err_buf[128];
     int   res;
 
-    unsigned long  n_calls = 0;
-    unsigned long  n_unexpected = 0;
-    unsigned long  n_sig_detected = 0;
+    unsigned long  num_calls = 0;
+    unsigned long  num_unexpected = 0;
+    unsigned long  num_sig_detected = 0;
     sig_atomic_t  act_sig_copy;
 
     int      my_res;
@@ -121,33 +121,33 @@ loop_expecting_eacces (const char *message_preamble)
         errno = 0;
         my_res = mkdir("/should-fail", S_IRWXU);
         my_err = errno;
-        ++n_calls;
+        ++num_calls;
 
         if (my_res != -1) {
             fprintf(stderr, "%s [%lu calls, %lu signals] Unexpected return value %d from mkdir()\n",
-                    message_preamble, n_calls, n_sig_detected, my_res);
+                    message_preamble, num_calls, num_sig_detected, my_res);
             exit(9);
         }
 
         res = strerror_r(my_err, err_buf, sizeof err_buf);
         if (res != 0) {
             fprintf(stderr, "%s [%lu calls, %lu signals] strerror_r(%d) failed, returning the errno value %d.\n",
-                    message_preamble, n_calls, n_sig_detected, my_err, res);
+                    message_preamble, num_calls, num_sig_detected, my_err, res);
             exit(99);
         }
 
         if (my_err != EACCES) {
-            ++n_unexpected;
+            ++num_unexpected;
             /* 'stdout', not 'stderr', because this is what we expect to happen occasionally */
             fprintf(stdout, "%s [%lu calls, %lu signals] Unexpected errno %d from mkdir(): %s\n",
-                    message_preamble, n_calls, n_sig_detected, my_err, err_buf);
+                    message_preamble, num_calls, num_sig_detected, my_err, err_buf);
         }
 
         act_sig_copy = act_sig;
         act_sig = 0;
 
         if (act_sig_copy != 0) {
-            ++n_sig_detected;
+            ++num_sig_detected;
         }
     }
 
@@ -156,9 +156,9 @@ loop_expecting_eacces (const char *message_preamble)
            "\n%s  %lu signals with interfering action detected,"
            "\n%s  %lu cases of unexpected errno value.\n",
            message_preamble, (int) stop_sig,
-           message_preamble, n_calls,
-           message_preamble, n_sig_detected,
-           message_preamble, n_unexpected);
+           message_preamble, num_calls,
+           message_preamble, num_sig_detected,
+           message_preamble, num_unexpected);
 }
 
 

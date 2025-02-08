@@ -141,7 +141,7 @@ main (int argc, char* argv[])
     uex_join_threads();
 
     printf("\nThe signal handler with interfering action executed %lu times.\n",
-           get_n_acts());
+           get_num_acts());
 
     return 0;
 }
